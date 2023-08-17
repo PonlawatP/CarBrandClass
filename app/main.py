@@ -1,4 +1,4 @@
-import re
+import requests
 import pickle
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -16,13 +16,13 @@ car_type = {
     6:"Toyota Innova"
 }
 
+api_hoggen = "http://172.17.0.2:8000/api/genhog"
+
 model = pickle.load(open(f'model/carsPred.pk', 'rb'))
 
 def predict_carType(mdl, HOG):
     pred = mdl.predict([HOG])
     return car_type[pred[0]]
-
-# predict_carType(model, hg)
 
 app = FastAPI()
 
@@ -33,16 +33,15 @@ app.add_middleware(
     allow_headers=['*']
 )
 
-# @app.get("/")
-# async def root():
-#     return {"message": "hello"}
 
-
-@app.get("/api/carbrand")
+@app.post("/api/carbrand")
 async def genhog(request: Request):
     data = await request.json()
+
     try:
-        res = predict_carType(model, data['hog'])
+        hog_resp = requests.get(api_hoggen, json={"img": data['img']},headers={"Content-Type": "application/json"})
+        sec_data = hog_resp.json()
+        res = predict_carType(model, sec_data['data'])
         return {"result": res}
     except:
         raise HTTPException(status_code=500, detail="invalid value")
