@@ -51,7 +51,7 @@ upload_here.addEventListener('click', ()=>{
 })
 
 async function getResult(base64img){
-    return fetch(`api/carbrand`, {
+    return fetch(`api/plantguess`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
